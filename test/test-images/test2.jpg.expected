@@ -4,19 +4,19 @@ Software             : 6.0.1
 Bits per sample      : 0
 Image width          : 1319
 Image height         : 1040
-Image description    : 
+Image description    :
 Image orientation    : 0
-Image copyright      : 
+Image copyright      :
 Image date/time      : 2012:12:23 14:47:49
 Original date/time   : 2012:12:23 14:47:49
 Digitize date/time   : 2012:12:23 14:47:49
-Subsecond time       : 
+Subsecond time       :
 Exposure time        : 1/120 s
 F-stop               : f/2.4
 ISO speed            : 80
 Subject distance     : 0.000000 m
 Exposure bias        : 0.000000 EV
-Flash used?          : 1
+Flash used?          : 0
 Metering mode        : 5
 Lens focal length    : 4.280000 mm
 35mm focal length    : 35 mm
@@ -27,5 +27,5 @@ Lens min focal length: 0.000000 mm
 Lens max focal length: 0.000000 mm
 Lens f-stop min      : f/0.0
 Lens f-stop max      : f/0.0
-Lens make            : 
-Lens model           : 
+Lens make            :
+Lens model           :

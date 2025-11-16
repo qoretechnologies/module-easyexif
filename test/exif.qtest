@@ -1,3 +1,5 @@
+#!/usr/bin/env qore
+
 %new-style
 %requires easyexif
 %requires QUnit
@@ -5,68 +7,13 @@
 %exec-class Main
 
 
-bool sub test_exif_file(string fname) {
-    # module function call
-    hash result = get_exif(fname);
-
-    # it's aligned with easyexif test suite
-    string s;
-    s += sprintf("Camera make          : %s\n", result.Make);
-    s += sprintf("Camera model         : %s\n", result.Model);
-    s += sprintf("Software             : %s\n", result.Software);
-    s += sprintf("Bits per sample      : %d\n", result.BitsPerSample);
-    s += sprintf("Image width          : %d\n", result.ImageWidth);
-    s += sprintf("Image height         : %d\n", result.ImageHeight);
-    s += sprintf("Image description    : %s\n", result.ImageDescription);
-    s += sprintf("Image orientation    : %d\n", result.Orientation);
-    s += sprintf("Image copyright      : %s\n", result.Copyright);
-    s += sprintf("Image date/time      : %s\n", result.DateTime);
-    s += sprintf("Original date/time   : %s\n", result.DateTimeOriginal);
-    s += sprintf("Digitize date/time   : %s\n", result.DateTimeDigitized);
-    s += sprintf("Subsecond time       : %s\n", result.SubSecTimeOriginal);
-    s += sprintf("Exposure time        : 1/%d s\n", result.ExposureTime);
-    s += sprintf("F-stop               : f/%.1f\n", result.FNumber);
-    s += sprintf("ISO speed            : %d\n", result.ISOSpeedRatings);
-    s += sprintf("Subject distance     : %f m\n", result.SubjectDistance);
-    s += sprintf("Exposure bias        : %f EV\n", result.ExposureBiasValue);
-    s += sprintf("Flash used?          : %d\n", result.Flash);
-    s += sprintf("Metering mode        : %d\n", result.MeteringMode);
-    s += sprintf("Lens focal length    : %f mm\n", result.FocalLength);
-    s += sprintf("35mm focal length    : %d mm\n", result.FocalLengthIn35mm);
-    s += sprintf("GPS Latitude         : %f deg (%f deg, %f min, %f sec %s)\n",
-          result.GeoLocation.Latitude,
-          result.GeoLocation.LatComponents.degrees,
-          result.GeoLocation.LatComponents.minutes,
-          result.GeoLocation.LatComponents.seconds,
-          result.GeoLocation.LatComponents.direction);
-    s += sprintf("GPS Longitude        : %f deg (%f deg, %f min, %f sec %s)\n",
-          result.GeoLocation.Longitude,
-          result.GeoLocation.LonComponents.degrees,
-          result.GeoLocation.LonComponents.minutes,
-          result.GeoLocation.LonComponents.seconds,
-          result.GeoLocation.LonComponents.direction);
-    s += sprintf("GPS Altitude         : %f m\n", result.GeoLocation.Altitude);
-    s += sprintf("Lens min focal length: %f mm\n", result.LensInfo.FocalLengthMin);
-    s += sprintf("Lens max focal length: %f mm\n", result.LensInfo.FocalLengthMax);
-    s += sprintf("Lens f-stop min      : f/%.1f\n", result.LensInfo.FStopMin);
-    s += sprintf("Lens f-stop max      : f/%.1f\n", result.LensInfo.FStopMax);
-    s += sprintf("Lens make            : %s\n", result.LensInfo.Make);
-    s += sprintf("Lens model           : %s\n", result.LensInfo.Model);
-
-    ReadOnlyFile ref(fname + ".expected");
-    string r = ref.read(-1);
-
-    if (s != r) throw "REFERENCE-DIFFS", sprintf("test: %y -- reference: %y", s, r);
-    return True;
-}
-
 public class Main inherits QUnit::Test {
     private {
         Dir m_dir();
     }
 
     constructor() : Test("easyexif", "1.0") {
-        m_dir.chdir("test-images");
+        m_dir.chdir(get_script_dir() + "/test-images");
 
         addTestCase("negative tests", \negativeTests());
         addTestCase("reference images", \referenceImages());
@@ -75,16 +22,83 @@ public class Main inherits QUnit::Test {
     }
 
     negativeTests() {
-        testAssertion("non-jpeg file", \test_exif_file(), "test-images/lens_info.jpg.expected", new TestResultExceptionType("PARSE-EXIF-ERROR-NO-JPEG"));
+        assertThrows("PARSE-EXIF-ERROR-NO-JPEG", \testFile(), "test-images/lens_info.jpg.expected");
     }
 
     referenceImages() {
-        list images = m_dir.listFiles("\\.jpg$");
+        list<auto> images = m_dir.listFiles("\\.jpg$");
         ListIterator it(images);
 
         while (it.next()) {
-            string fname = "test-images/" + it.getValue();
-            testAssertion(it.getValue(), \test_exif_file(), fname);
+            string fname = get_script_dir() + "/test-images/" + it.getValue();
+            testFile(fname);
+        }
+    }
+
+    testFile(string fname) {
+        # module function call
+        hash<auto> result = get_exif(fname);
+
+        on_error printf("%N\n", result);
+
+        # it's aligned with easyexif test suite
+        string s;
+        s += sprintf("Camera make          : %s\n", result.Make);
+        s += sprintf("Camera model         : %s\n", result.Model);
+        s += sprintf("Software             : %s\n", result.Software);
+        s += sprintf("Bits per sample      : %d\n", result.BitsPerSample);
+        s += sprintf("Image width          : %d\n", result.ImageWidth);
+        s += sprintf("Image height         : %d\n", result.ImageHeight);
+        s += sprintf("Image description    : %s\n", result.ImageDescription);
+        s += sprintf("Image orientation    : %d\n", result.Orientation);
+        s += sprintf("Image copyright      : %s\n", result.Copyright);
+        s += sprintf("Image date/time      : %s\n", result.DateTime);
+        s += sprintf("Original date/time   : %s\n", result.DateTimeOriginal);
+        s += sprintf("Digitize date/time   : %s\n", result.DateTimeDigitized);
+        s += sprintf("Subsecond time       : %s\n", result.SubSecTimeOriginal);
+        s += sprintf("Exposure time        : 1/%d s\n", result.ExposureTime ? 1.0 / result.ExposureTime : 0);
+        s += sprintf("F-stop               : f/%.1f\n", result.FNumber);
+        s += sprintf("ISO speed            : %d\n", result.ISOSpeedRatings);
+        s += sprintf("Subject distance     : %f m\n", result.SubjectDistance);
+        s += sprintf("Exposure bias        : %f EV\n", result.ExposureBiasValue);
+        s += sprintf("Flash used?          : %d\n", result.Flash);
+        s += sprintf("Metering mode        : %d\n", result.MeteringMode);
+        s += sprintf("Lens focal length    : %f mm\n", result.FocalLength);
+        s += sprintf("35mm focal length    : %d mm\n", result.FocalLengthIn35mm);
+        s += sprintf("GPS Latitude         : %f deg (%f deg, %f min, %f sec%s)\n",
+            result.GeoLocation.Latitude,
+            result.GeoLocation.LatComponents.degrees,
+            result.GeoLocation.LatComponents.minutes,
+            result.GeoLocation.LatComponents.seconds,
+            result.GeoLocation.LatComponents.direction ? " " + result.GeoLocation.LatComponents.direction : "");
+        s += sprintf("GPS Longitude        : %f deg (%f deg, %f min, %f sec%s)\n",
+            result.GeoLocation.Longitude,
+            result.GeoLocation.LonComponents.degrees,
+            result.GeoLocation.LonComponents.minutes,
+            result.GeoLocation.LonComponents.seconds,
+            result.GeoLocation.LonComponents.direction ? " " + result.GeoLocation.LonComponents.direction : "");
+        s += sprintf("GPS Altitude         : %f m\n", result.GeoLocation.Altitude);
+        s += sprintf("Lens min focal length: %f mm\n", result.LensInfo.FocalLengthMin);
+        s += sprintf("Lens max focal length: %f mm\n", result.LensInfo.FocalLengthMax);
+        s += sprintf("Lens f-stop min      : f/%.1f\n", result.LensInfo.FStopMin);
+        s += sprintf("Lens f-stop max      : f/%.1f\n", result.LensInfo.FStopMax);
+        s += sprintf("Lens make            : %s\n", result.LensInfo.Make);
+        s += sprintf("Lens model           : %s\n", result.LensInfo.Model);
+
+        ReadOnlyFile ref(fname + ".expected");
+        string r = ref.read(-1);
+        DataLineIterator rit(r);
+        DataLineIterator sit(s);
+        while (True) {
+            bool rend = rit.next();
+            bool send = sit.next();
+            assertEq(rend, send);
+            if (!rend) {
+                break;
+            }
+            string rline = trim(rit.getLine());
+            string sline = trim(sit.getLine());
+            assertEq(rline, sline, fname);
         }
     }
 }

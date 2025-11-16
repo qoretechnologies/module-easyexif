@@ -20,7 +20,6 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #include <qore/Qore.h>
 #include <fstream>
 #include <vector>
@@ -29,9 +28,7 @@
 
 using namespace std;
 
-
 static QoreNamespace EasyexifNS("EasyExif");
-
 
 void init_easyexif_functions(QoreNamespace& ns);
 
@@ -48,7 +45,6 @@ void easyexif_module_delete() {
    // nothing to do here in this case
 }
 
-
 // qore module symbols
 DLLEXPORT char qore_module_name[] = "easyexif";
 DLLEXPORT char qore_module_version[] = PACKAGE_VERSION;
@@ -61,7 +57,6 @@ DLLEXPORT qore_module_init_t qore_module_init = easyexif_module_init;
 DLLEXPORT qore_module_ns_init_t qore_module_ns_init = easyexif_module_ns_init;
 DLLEXPORT qore_module_delete_t qore_module_delete = easyexif_module_delete;
 DLLEXPORT qore_license_t qore_module_license = QL_LGPL;
-
 
 /** @mainpage %Qore %easyexif Module
 
@@ -84,9 +79,12 @@ DLLEXPORT qore_license_t qore_module_license = QL_LGPL;
     - \c BitsPerSample - int, Number of bits per component
     - \c Software - string, Software used
     - \c DateTime - string, File change date and time. Unfortunately the timestamp mask is not specified
-    - \c DateTimeOriginal - string, Original file date and time (may not exist). Unfortunately the timestamp mask is not specified
-    - \c DateTimeDigitized - string, Digitization date and time (may not exist). Unfortunately the timestamp mask is not specified
-    - \c SubSecTimeOriginal - string, Sub-second time that original picture was taken. Unfortunately the timestamp mask is not specified
+    - \c DateTimeOriginal - string, Original file date and time (may not exist). Unfortunately the timestamp mask is
+      not specified
+    - \c DateTimeDigitized - string, Digitization date and time (may not exist). Unfortunately the timestamp mask is
+      not specified
+    - \c SubSecTimeOriginal - string, Sub-second time that original picture was taken. Unfortunately the timestamp
+      mask is not specified
     - \c Copyright - string, File copyrtight information
     - \c ExposureTime - float, Exposure time in seconds
     - \c FNumber - float, F/stop
@@ -129,15 +127,15 @@ DLLEXPORT qore_license_t qore_module_license = QL_LGPL;
     - FocalLengthMax - loat, Max focal length (mm)
     - Make - string, Lens manufacturer
     - Model - string, Lens model
-
  */
 
-QoreHashNode* priv_create_hash(const BinaryNode *buffer, ExceptionSink *xsink) {
+QoreHashNode* priv_create_hash(const BinaryNode* buffer, ExceptionSink* xsink) {
     easyexif::EXIFInfo e;
     // TODO/FIXME: conversions?
     int err = e.parseFrom((unsigned char*)buffer->getPtr(), buffer->size());
     switch (err) {
         case PARSE_EXIF_SUCCESS: {
+<<<<<<< HEAD
                 QoreHashNode* ret = new QoreHashNode(autoTypeInfo);
                 ret->setKeyValue("ByteAlign", e.ByteAlign, xsink);
                 ret->setKeyValue("ImageDescription", new QoreStringNode(e.ImageDescription), xsink);
@@ -198,15 +196,82 @@ QoreHashNode* priv_create_hash(const BinaryNode *buffer, ExceptionSink *xsink) {
                 ret->setKeyValue("LensInfo", lens, xsink);
 
                 return ret;
+=======
+            ReferenceHolder<QoreHashNode> ret(new QoreHashNode(autoTypeInfo), xsink);
+            ret->setKeyValue("ByteAlign", e.ByteAlign, xsink);
+            ret->setKeyValue("ImageDescription", new QoreStringNode(e.ImageDescription), xsink);
+            ret->setKeyValue("Make", new QoreStringNode(e.Make), xsink);
+            ret->setKeyValue("Model", new QoreStringNode(e.Model), xsink);
+            ret->setKeyValue("Orientation", e.Orientation, xsink);
+            ret->setKeyValue("BitsPerSample", e.BitsPerSample, xsink);
+            ret->setKeyValue("Software", new QoreStringNode(e.Software), xsink);
+            ret->setKeyValue("DateTime", new QoreStringNode(e.DateTime), xsink);
+            ret->setKeyValue("DateTimeOriginal", new QoreStringNode(e.DateTimeOriginal), xsink);
+            ret->setKeyValue("DateTimeDigitized", new QoreStringNode(e.DateTimeDigitized), xsink);
+            ret->setKeyValue("SubSecTimeOriginal", new QoreStringNode(e.SubSecTimeOriginal), xsink);
+            ret->setKeyValue("Copyright", new QoreStringNode(e.Copyright), xsink);
+            ret->setKeyValue("ExposureTime", e.ExposureTime, xsink);
+            ret->setKeyValue("FNumber", e.FNumber, xsink);
+            ret->setKeyValue("ISOSpeedRatings", e.ISOSpeedRatings, xsink);
+            ret->setKeyValue("ShutterSpeedValue", e.ShutterSpeedValue, xsink);
+            ret->setKeyValue("ExposureBiasValue", e.ExposureBiasValue, xsink);
+            ret->setKeyValue("SubjectDistance", e.SubjectDistance, xsink);
+            ret->setKeyValue("FocalLength", e.FocalLength, xsink);
+            ret->setKeyValue("FocalLengthIn35mm", e.FocalLengthIn35mm, xsink);
+            ret->setKeyValue("Flash", e.Flash, xsink);
+            ret->setKeyValue("MeteringMode", e.MeteringMode, xsink);
+            ret->setKeyValue("ImageWidth", e.ImageWidth, xsink);
+            ret->setKeyValue("ImageHeight",e.ImageHeight, xsink);
+
+            //GeoLocation
+            ReferenceHolder<QoreHashNode> geo(new QoreHashNode(autoTypeInfo), xsink);
+            geo->setKeyValue("Latitude", e.GeoLocation.Latitude, xsink);
+            geo->setKeyValue("Longitude", e.GeoLocation.Longitude, xsink);
+            geo->setKeyValue("Altitude", e.GeoLocation.Altitude, xsink);
+            geo->setKeyValue("AltitudeRef", e.GeoLocation.AltitudeRef, xsink);
+
+            ReferenceHolder<QoreHashNode> lat(new QoreHashNode(autoTypeInfo), xsink);
+            lat->setKeyValue("degrees", e.GeoLocation.LatComponents.degrees, xsink);
+            lat->setKeyValue("minutes", e.GeoLocation.LatComponents.minutes, xsink);
+            lat->setKeyValue("seconds", e.GeoLocation.LatComponents.seconds, xsink);
+            if (e.GeoLocation.LatComponents.direction != '?') {
+                lat->setKeyValue("direction", new QoreStringNode(e.GeoLocation.LatComponents.direction), xsink);
+>>>>>>> 121df59 (bugfixes and updates)
             }
+            geo->setKeyValue("LatComponents", lat.release(), xsink);
+            ReferenceHolder<QoreHashNode> lon(new QoreHashNode(autoTypeInfo), xsink);
+            lon->setKeyValue("degrees", e.GeoLocation.LonComponents.degrees, xsink);
+            lon->setKeyValue("minutes", e.GeoLocation.LonComponents.minutes, xsink);
+            lon->setKeyValue("seconds", e.GeoLocation.LonComponents.seconds, xsink);
+            if (e.GeoLocation.LonComponents.direction != '?') {
+                lon->setKeyValue("direction", new QoreStringNode(e.GeoLocation.LonComponents.direction), xsink);
+            }
+            geo->setKeyValue("LonComponents", lon.release(), xsink);
+
+            ret->setKeyValue("GeoLocation", geo.release(), xsink);
+
+            //LensInfo
+            ReferenceHolder<QoreHashNode> lens(new QoreHashNode(autoTypeInfo), xsink);
+            lens->setKeyValue("FStopMin", e.LensInfo.FStopMin, xsink);
+            lens->setKeyValue("FStopMax", e.LensInfo.FStopMax, xsink);
+            lens->setKeyValue("FocalLengthMin", e.LensInfo.FocalLengthMin, xsink);
+            lens->setKeyValue("FocalLengthMax", e.LensInfo.FocalLengthMax, xsink);
+            lens->setKeyValue("Make", new QoreStringNode(e.LensInfo.Make), xsink);
+            lens->setKeyValue("Model", new QoreStringNode(e.LensInfo.Model), xsink);
+            ret->setKeyValue("LensInfo", lens.release(), xsink);
+
+            return ret.release();
+        }
         case PARSE_EXIF_ERROR_NO_JPEG:
-            xsink->raiseException("PARSE-EXIF-ERROR-NO-JPEG", "No JPEG markers found in buffer, possibly invalid JPEG file");
+            xsink->raiseException("PARSE-EXIF-ERROR-NO-JPEG", "No JPEG markers found in buffer, possibly invalid "
+                "JPEG file");
             return 0;
         case PARSE_EXIF_ERROR_NO_EXIF:
             xsink->raiseException("PARSE-EXIF-ERROR-NO-EXIF", "No EXIF header found in JPEG file");
             return 0;
         case PARSE_EXIF_ERROR_UNKNOWN_BYTEALIGN:
-            xsink->raiseException("PARSE-EXIF-ERROR-UNKNOWN-BYTEALIGN", "Byte alignment specified in EXIF file was unknown (not Motorola or Intel)");
+            xsink->raiseException("PARSE-EXIF-ERROR-UNKNOWN-BYTEALIGN", "Byte alignment specified in EXIF file was "
+                "unknown (not Motorola or Intel)");
             return 0;
         case PARSE_EXIF_ERROR_CORRUPT:
             xsink->raiseException("PARSE-EXIF-ERROR-CORRUPT", "EXIF header was found, but data was corrupted");
@@ -217,27 +282,25 @@ QoreHashNode* priv_create_hash(const BinaryNode *buffer, ExceptionSink *xsink) {
     }
 }
 
-
-
 /** @defgroup easyexif_constants_bytealign Byte Alinment Constants
 
     Used for values in key \c ByteAlign
  */
-//@{
+///@{
 namespace Qore::EasyExif;
 
 //! Motorola byte alignment
 const BYTEALIGN_MOTOROLA = 0;
 //! Intel byte alignment
 const BYTEALIGN_INTEL = 1;
-//@}
+///@}
 
 /** @defgroup easyexif_constants_orientation Image Orientation Constants
 
     Image orientation, start of data corresponds to where is the 0x0 point of the image.
     Used for values in key \c Orientation
  */
-//@{
+///@{
 namespace Qore::EasyExif;
 
 //! unspecified in EXIF dat
@@ -252,13 +315,13 @@ const ORIENTATTION_UPPER_RIGHT = 6;
 const ORIENTATTION_LOWER_LEFT = 8;
 //! undefined
 const ORIENTATTION_UNDEFINED = 9;
-//@}
+///@}
 
 /** @defgroup easyexif_constants_meteringmode Metering Mode Constants
 
     Used for values in key \c MeteringMode
  */
-//@{
+///@{
 namespace Qore::EasyExif;
 
 //! average
@@ -271,13 +334,13 @@ const METERINGMODE_SPOT = 3;
 const METERINGMODE_MULTISPOT = 4;
 //! multi-segment
 const METERINGMODE_MULTISEGMENT = 5;
-//@}
+///@}
 
 /** @defgroup easyexif_constants_flash Flash Usage Constants
 
     Used for values in key \c Flash
  */
-//@{
+///@{
 namespace Qore::EasyExif;
 
 //! Flash was ON
@@ -290,18 +353,18 @@ const FLASH_NO = 0;
 
     Used for values in key \c AltitudeRef
  */
-//@
+///@
 namespace Qore::EasyExif;
 
 //! Key \c Altitude value is above the sea
 const ALTITUDEREF_ABOVE = 0;
 //! Key \c Altitude value is below the sea
 const ALTITUDEREF_BELOW = -1;
-//@}
+///@}
 
 /** @defgroup easyexif_functions Exif Functions
  */
-//@{
+///@{
 namespace Qore::EasyExif;
 
 //! Get EXIF information hash from the JPEG file
@@ -319,7 +382,7 @@ namespace Qore::EasyExif;
     <b>Example</b>
 
     @code
-hash res = get_exif("/Users/pvanek/Pictures/auto-dvere/2014-05-16\ 09.12.36.jpg");
+hash<auto> res = get_exif("/Users/pvanek/Pictures/auto-dvere/2014-05-16\ 09.12.36.jpg");
 printf("%N\n", res);
 
 hash: (26 members)
@@ -370,20 +433,26 @@ hash: (26 members)
     Make : ""
     Model : ""
     @endcode
- */
-hash get_exif(string filename) [flags=RET_VALUE_ONLY] {
+*/
+hash<auto> get_exif(string filename) [flags=RET_VALUE_ONLY] {
+    try {
+        ifstream ifs(filename->c_str(), ios::in | ios::binary | ios::ate);
+        if (!ifs) {
+            xsink->raiseException("PARSE-EXIF-ERROR-NO-JPEG", "file '%s' could not be opened", filename->c_str());
+            return QoreValue();
+        }
 
-    ifstream ifs(filename->getBuffer(), ios::in | ios::binary | ios::ate);
+        ifstream::pos_type fileSize = ifs.tellg();
+        ifs.seekg(0, ios::beg);
 
-    ifstream::pos_type fileSize = ifs.tellg();
-    ifs.seekg(0, ios::beg);
+        vector<char> bytes(fileSize);
+        ifs.read(&bytes[0], fileSize);
 
-    vector<char> bytes(fileSize);
-    ifs.read(&bytes[0], fileSize);
-
-    return priv_create_hash(new BinaryNode(&bytes[0], fileSize), xsink);
+        return priv_create_hash(new BinaryNode(&bytes[0], fileSize), xsink);
+    } catch (std::exception &e) {
+        xsink->raiseException("EXCEPTION", e.what());
+    }
 }
-
 
 //! Get EXIF information hash from the JPEG file
 /** @param a binary value with JPEG data
@@ -398,5 +467,4 @@ hash get_exif(string filename) [flags=RET_VALUE_ONLY] {
 hash get_exif(binary buffer) [flags=RET_VALUE_ONLY] {
     return priv_create_hash(buffer, xsink);
 }
-
-//@}
+///@}
